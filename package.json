@@ -1,0 +1,36 @@
+{
+  "name": "grunt-zuckrig-closure",
+  "version": "0.0.0",
+  "description": "Reduce a verbose syntax for Google Closure Compiler to be more Pythonic/Rubistic.",
+  "keywords": [
+    "Closure",
+    "CoffeeScript",
+    "Compiler",
+    "Google",
+    "gruntplugin"
+  ],
+  "author": "Lukas Rychtecky <lukas.rychtecky@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LukasRychtecky/grunt-zuckrig-closure.git"
+  },
+  "dependencies": {
+    "esprima": "~1.0.4",
+    "sugar": "~1.4.1"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-coffee": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-este": "*",
+    "grunt-release": "*",
+    "grunt-simple-mocha": "*",
+    "mocha": "*",
+    "should": "*"
+  },
+  "scripts": {
+    "test": "grunt test"
+  },
+  "main": "lib/zuckrig",
+  "license": "MIT"
+}
