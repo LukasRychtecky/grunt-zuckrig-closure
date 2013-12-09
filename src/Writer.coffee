@@ -21,7 +21,9 @@ class Writer
         else
           source += @_create_space token.loc.start.column - previous.loc.end.column
 
-      if token.type is 'Block'
+      if token.type is 'NewBlock'
+        source += "  /*#{token.value}  */"
+      else if token.type is 'Block'
         source += "/*#{token.value}*/"
       # CoffeeScript 1.4 does not support inline comments, but 2 will do.
       else if token.type == 'Line'
