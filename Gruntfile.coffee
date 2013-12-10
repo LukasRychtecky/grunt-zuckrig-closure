@@ -50,7 +50,10 @@ module.exports = (grunt) ->
         tag: true
         push: true
         pushTags: true
-        npm: false
+        npm: true
+        commitMessage: '<%= version %>'
+        tagName: '<%= version %>'
+        tagMessage: '<%= version %>'
 
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-watch'

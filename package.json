@@ -31,6 +31,6 @@
   "scripts": {
     "test": "grunt test"
   },
-  "main": "lib/zuckrig",
+  "main": "lib/",
   "license": "MIT"
 }
