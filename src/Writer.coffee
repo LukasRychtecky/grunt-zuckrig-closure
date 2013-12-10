@@ -12,14 +12,15 @@ class Writer
 
   write: (tokens) ->
     source = ''
+    prev = null
     for token, i in tokens
       new_line = false
-      if previous
-        new_line = token.loc.start.line != previous.loc.end.line
+      if prev?
+        new_line = token.loc.start.line != prev.loc.end.line
         if new_line
           source += @_create_space token.loc.start.column, true
         else
-          source += @_create_space token.loc.start.column - previous.loc.end.column
+          source += @_create_space token.loc.start.column - prev.loc.end.column
 
       if token.type is 'NewBlock'
         source += "  /*#{token.value}  */"
@@ -30,8 +31,10 @@ class Writer
         source += "//#{token.value}"
       else
         source += token.value
+        # weird hack, because Este coffee2closure removes last curly bracket, heh?
+        source += "\n" if token.value is ';'
 
-      previous = token
+      prev = token
     source
 
 module.exports = Writer

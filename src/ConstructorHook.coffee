@@ -6,11 +6,12 @@ ANNO =
 
 class ConstructorHook
 
-  constructor: (@_extractor) ->
+  constructor: (@_extractor, @_builder) ->
     @_super_class = null
     @_required = []
     @_produce_pos = -1
     @_to_inject = {}
+    @_class_name = null
 
   ###*
     Injects a constructor annotation. If the annotation is provided does nothing.
@@ -22,10 +23,12 @@ class ConstructorHook
       @_find_constructor tok, i, tokens
       @_find_produce_position tok, i, tokens
       @_find_required tok, i, tokens
+      @_find_class_name tok, i, tokens
 
     for k, v of @_to_inject
       @_inject_annotations k, v, tokens
 
+    @_inject_class_provide tokens
     @_inject_require_super tokens
 
   _inject_annotations: (i, comment, tokens) ->
@@ -101,10 +104,13 @@ class ConstructorHook
 
   _inject_require_super: (tokens) ->
     if @_super_class? and @_produce_pos isnt -1 and @_super_class not in @_required
-      tok = tokens[@_produce_pos]
-      for to_insert in @_build_super_require(tok.loc)
-        tokens.splice @_produce_pos, 0, to_insert
-        @_produce_pos++
+
+      @_insert_tokens @_build_super_require(tokens[@_produce_pos].loc), tokens, @_produce_pos
+
+  _insert_tokens: (to_insert, tokens, i) ->
+    for tok in to_insert
+      tokens.splice i, 0, tok
+      i++
 
   _build_super_require: (orig) ->
     loc = {}
@@ -113,24 +119,15 @@ class ConstructorHook
     loc.start.line++
     loc.end.line++
 
-    [
-      @_build_iden('goog', loc),
-      @_build_punc('.', loc),
-      @_build_iden('require', loc),
-      @_build_punc('(', loc),
-      @_build_str("'#{@_super_class}'", loc),
-      @_build_punc(')', loc),
-      @_build_punc(';', loc)
-    ]
+    @_builder.build_goog_call 'require', "'#{@_super_class}'", loc
 
-  _build_punc: (val, loc) ->
-    {type: 'Punctuator', value: val, loc: loc}
-
-  _build_iden: (val, loc) ->
-    {type: 'Identifier', value: val, loc: loc}
-
-  _build_str: (val, loc) ->
-    {type: 'String', value: val, loc: loc}
+  _build_fake_location: ->
+    start:
+      line: 0
+      column: 0
+    end:
+      line: 0
+      column: 0
 
   _replace_escaped_chars: (val) ->
     val.replace /\\|'/g, ''
@@ -138,5 +135,16 @@ class ConstructorHook
   _find_required: (tok, i, tokens) ->
     if tok.value is 'goog' and tokens[i + 1].value is '.' and tokens[i + 2].value is 'require'
       @_required.push @_replace_escaped_chars(tokens[i + 4].value)
+
+  _find_class_name: (tok, i, tokens) ->
+    return if @_class_name?
+    @_class_name = @_extractor.parse_class_from_def i, tokens
+
+  _inject_class_provide: (tokens) ->
+    if @_produce_pos is -1
+      provide = @_builder.build_goog_call 'provide', "'#{@_class_name}'", @_build_fake_location()
+
+      @_insert_tokens provide, tokens, 0
+      @_produce_pos = provide.length
 
 module.exports = ConstructorHook
