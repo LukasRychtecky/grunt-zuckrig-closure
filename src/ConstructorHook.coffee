@@ -5,14 +5,28 @@ ANNO =
   EXTENDS: '@extends'
 
 class ConstructorHook
-  @_super_class = null
+
+  constructor: (@_extractor) ->
+    @_super_class = null
+    @_required = []
+    @_produce_pos = -1
+    @_to_inject = {}
 
   ###*
     Injects a constructor annotation. If the annotation is provided does nothing.
+    Also injects goog.require and @extends for a super class, if it's necessary.
   ###
   fix: (tokens) ->
-    @._try_find_super_class tokens
-    @._find_constructor tokens
+    for tok, i in tokens
+      @_try_find_super_class tok, i, tokens
+      @_find_constructor tok, i, tokens
+      @_find_produce_position tok, i, tokens
+      @_find_required tok, i, tokens
+
+    for k, v of @_to_inject
+      @_inject_annotations k, v, tokens
+
+    @_inject_require_super tokens
 
   _inject_annotations: (i, comment, tokens) ->
 
@@ -66,62 +80,63 @@ class ConstructorHook
     # ctor from __extends injected helper
     next_sibling.value isnt 'ctor'
 
-  _find_constructor: (tokens) ->
-    for token, i in tokens
-      next_sibling = tokens[i + 1]
-      continue if !@._is_constructor token, next_sibling
-      @_inject_annotations i, tokens[i - 1], tokens
-      return
+  _find_constructor: (tok, i, tokens) ->
+    next = tokens[i + 1]
+    return if !@_is_constructor tok, next
+    @_to_inject[i] = tokens[i - 1]
 
   _is_extending: (tok, next) ->
     tok.type is 'Identifier' and tok.value is '__extends' and next.value is '('
 
-  _try_find_super_class: (tokens) ->
-    for tok, i in tokens
-      next = tokens[i + 1]
-      if @._is_extending tok, next
-        @_parse_super_class i, tokens
-        return
+  _try_find_super_class: (tok, i, tokens) ->
+    next = tokens[i + 1]
+    if @_is_extending tok, next
+      @_super_class = @_extractor.parse_super_class i, tokens
+      return
 
-  _parse_super_class: (i, tokens) ->
-    len = tokens.length
+  _find_produce_position: (tok, i, tokens) ->
+    return if @_produce_pos isnt -1
+    if tok.value is 'goog' and tokens[i + 1].value is '.' and tokens[i + 2].value is 'provide'
+      @_produce_pos = i + 7
 
-    while i < len
-      tok = tokens[i]
+  _inject_require_super: (tokens) ->
+    if @_super_class? and @_produce_pos isnt -1 and @_super_class not in @_required
+      tok = tokens[@_produce_pos]
+      for to_insert in @_build_super_require(tok.loc)
+        tokens.splice @_produce_pos, 0, to_insert
+        @_produce_pos++
 
-      if tok.type isnt 'Keyword' or tok.value isnt 'return'
-        i += 1
-        continue
+  _build_super_require: (orig) ->
+    loc = {}
+    for k, v of orig
+      loc[k] = Object.clone v, true
+    loc.start.line++
+    loc.end.line++
 
-      if tokens[i + 2].value isnt ';'
-        i += 2
-        continue
+    [
+      @_build_iden('goog', loc),
+      @_build_punc('.', loc),
+      @_build_iden('require', loc),
+      @_build_punc('(', loc),
+      @_build_str("'#{@_super_class}'", loc),
+      @_build_punc(')', loc),
+      @_build_punc(';', loc)
+    ]
 
-      if tokens[i + 3].value isnt '}'
-        i += 3
-        continue
+  _build_punc: (val, loc) ->
+    {type: 'Punctuator', value: val, loc: loc}
 
-      if tokens[i + 4].value isnt ')'
-        i += 4
-        continue
+  _build_iden: (val, loc) ->
+    {type: 'Identifier', value: val, loc: loc}
 
-      if tokens[i + 5].value isnt '('
-        i += 5
-        continue
+  _build_str: (val, loc) ->
+    {type: 'String', value: val, loc: loc}
 
-      if tokens[i + 6].type isnt 'Identifier'
-        i += 6
-        continue
+  _replace_escaped_chars: (val) ->
+    val.replace /\\|'/g, ''
 
-      super_class = []
-
-      j = 6
-      loop
-        next = tokens[i + j]
-        break unless next.type is 'Identifier' or next.value is '.'
-        super_class.push next.value
-        j++
-        @_super_class = super_class.join('')
-      break
+  _find_required: (tok, i, tokens) ->
+    if tok.value is 'goog' and tokens[i + 1].value is '.' and tokens[i + 2].value is 'require'
+      @_required.push @_replace_escaped_chars(tokens[i + 4].value)
 
 module.exports = ConstructorHook
