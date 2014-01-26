@@ -3,10 +3,10 @@ module.exports = (grunt) ->
   path = require 'path'
 
   # to preserve directory structure
-  coffeeLib2SrcDest = grunt.file.expandMapping '**/*.coffee', 'lib/',
+  coffee_lib_2_src_dest = grunt.file.expandMapping '**/*.coffee', 'tasks/',
     cwd: 'src/'
     ext: '.js'
-    rename: (dest, matchedSrcPath) -> path.join dest, matchedSrcPath
+    rename: (dest, matched_src_path) -> path.join dest, matched_src_path
 
   grunt.initConfig
 
@@ -14,7 +14,7 @@ module.exports = (grunt) ->
       options:
         bare: true
       all:
-        files: coffeeLib2SrcDest.concat [
+        files: coffee_lib_2_src_dest.concat [
           expand: true
           src: 'test/**/*.coffee'
           ext: '.js'
@@ -37,7 +37,7 @@ module.exports = (grunt) ->
 
       simplemocha:
         files: [
-          'lib/**/*.js'
+          'tasks/**/*.js'
           'test/**/*.js'
         ]
         tasks: 'simplemocha'

@@ -1,20 +1,16 @@
-esprima = require 'esprima'
-Parser = require '../lib/Parser'
-Writer = require '../lib/Writer'
-ConstructorHook = require '../lib/ConstructorHook'
-Extractor = require '../lib/Extractor'
-TokenBuilder = require '../lib/TokenBuilder'
+module.exports = (grunt) ->
+  {zuckrig} = require '../tasks/zuckrig_filter'
 
-exports.zuckrig = (source) ->
-  parser = new Parser source
+  grunt.registerMultiTask 'zuckrig', 'Reduce a verbose syntax for Google Closure Compiler to be more Pythonist/Rubist.', ->
+    count = 0
+    @files.forEach (f) ->
+      try
+        file = grunt.file.read f.dest
+        file = zuckrig file
+        grunt.file.write f.dest, file
+        count++
+      catch e
+        grunt.log.writeln ['File', f.dest, 'failed'].join(' ')
+        grunt.log.err e
 
-  tokens = parser.parse()
-
-  ctor_hook = new ConstructorHook new Extractor(), new TokenBuilder()
-  ctor_hook.fix tokens
-
-  writer = new Writer()
-
-  fixed = writer.write tokens
-
-  return fixed
+    grunt.log.ok "#{count} files fixed by Zuckrig Closure."
