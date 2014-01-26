@@ -70,6 +70,8 @@ module.exports = (grunt) ->
 
     zuckrig:
       all:
+        options:
+          filter: (file) -> not /_test.js$/.test(file)
         files: [
           expand: true
           src: [
