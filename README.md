@@ -3,7 +3,7 @@ Zuckrig Closure
 
 A Grunt task that reduces a verbose syntax for Google Closure Compiler to be more Pythonic/Rubistic.
 
-What is does?
+What it does?
 -------------
 
 It reduces needed code for Google Closure Compiler (provide, require and annotation).
