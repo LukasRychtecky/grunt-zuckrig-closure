@@ -58,6 +58,57 @@ app.Employee = (function(_super) {
   })(app.Model);
 ```
 
+Usage
+-----
+
+Modify Grunfile.coffee like that:
+
+```coffeescript
+module.exports = (grunt) ->
+
+  grunt.initConfig
+
+    zuckrig:
+      all:
+        files: [
+          expand: true
+          src: [
+            'path/to/**/*.js'
+          ]
+          ext: '.js'
+        ]
+
+    esteWatch:
+      options:
+        dirs: [
+          'path/to/**/'
+        ]
+
+      coffee: (filepath) ->
+        files = [
+          expand: true
+          src: filepath
+          ext: '.js'
+        ];
+        grunt.config ['coffee', 'all', 'files'], files
+        grunt.config ['zuckrig', 'all', 'files'], files
+        grunt.config ['coffee2closure', 'all', 'files'], files
+        ['coffee', 'zuckrig', 'coffee2closure']
+
+  grunt.loadNpmTasks 'grunt-zuckrig-closure'
+
+  grunt.registerTask 'build', 'Build app.' ->
+    tasks = [
+      "clean"
+      "coffee"
+      'zuckrig'
+      "coffee2closure"
+      "esteDeps"
+      "esteWatch"
+    ]
+    grunt.task.run tasks
+```
+
 Tests
 -----
    ```sh
