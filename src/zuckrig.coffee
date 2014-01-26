@@ -3,7 +3,11 @@ module.exports = (grunt) ->
 
   grunt.registerMultiTask 'zuckrig', 'Reduce a verbose syntax for Google Closure Compiler to be more Pythonist/Rubist.', ->
     count = 0
+    opts = @options(filter: -> true)
     @files.forEach (f) ->
+
+      return unless opts.filter f.dest
+
       try
         file = grunt.file.read f.dest
         file = zuckrig file
