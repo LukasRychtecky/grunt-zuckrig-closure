@@ -141,7 +141,7 @@ class ConstructorHook
     @_class_name = @_extractor.parse_class_from_def i, tokens
 
   _inject_class_provide: (tokens) ->
-    if @_produce_pos is -1
+    if @_produce_pos is -1 and @_class_name?
       provide = @_builder.build_goog_call 'provide', "'#{@_class_name}'", @_build_fake_location()
 
       @_insert_tokens provide, tokens, 0
