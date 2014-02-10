@@ -11,7 +11,12 @@ class Extractor
     class_name = []
     loop
       next = tokens[i]
-      break unless next.type is 'Identifier' or next.value is '.'
+      if not next
+        break
+
+      unless next.type is 'Identifier' or next.value is '.'
+        break
+
       class_name.push next.value
       if back then i-- else i++
 

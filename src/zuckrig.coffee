@@ -15,6 +15,6 @@ module.exports = (grunt) ->
         count++
       catch e
         grunt.log.writeln ['File', f.dest, 'failed'].join(' ')
-        grunt.log.err e
+        grunt.log.error e
 
     grunt.log.ok "#{count} files fixed by Zuckrig Closure."
