@@ -291,3 +291,35 @@ describe 'Zuckrig', ->
 
     """
     zuckrig(source).should.equal fixedSource
+
+  it 'Should add goog.provide for a class', ->
+    source = """
+      app.Foo = (function() {
+        function Foo() {
+          var a;
+          a = 2;
+        }
+
+        return Foo;
+
+      })();
+    """
+    fixedSource = """
+      goog.provide('app.Foo');
+
+      app.Foo = (function() {
+        /**
+          @constructor
+        */
+        function Foo() {
+          var a;
+
+          a = 2;
+
+        }
+        return Foo;
+
+      })();
+
+    """
+    zuckrig(source).should.equal fixedSource
