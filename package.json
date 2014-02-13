@@ -1,6 +1,6 @@
 {
   "name": "grunt-zuckrig-closure",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Reduce a verbose syntax for Google Closure Compiler to be more Pythonic/Rubistic.",
   "keywords": [
     "Closure",
