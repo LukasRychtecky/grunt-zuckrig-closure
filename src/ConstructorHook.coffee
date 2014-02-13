@@ -117,7 +117,7 @@ class ConstructorHook
     for k, v of orig
       loc[k] = Object.clone v, true
     loc.start.line++
-    loc.end.line++
+    loc.end.line = loc.start.line
 
     @_builder.build_goog_call 'require', "'#{@_super_class}'", loc
 
