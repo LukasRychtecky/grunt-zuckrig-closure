@@ -10,11 +10,9 @@ module.exports.zuckrig = (source) ->
 
   tokens = parser.parse()
 
-  ctor_hook = new ConstructorHook new Extractor(), new TokenBuilder()
-  ctor_hook.fix tokens
+  ctor_hook = new ConstructorHook(new Extractor(), new TokenBuilder())
+  fix_tokens = ctor_hook.fix(tokens)
 
   writer = new Writer()
 
-  fixed = writer.write tokens
-
-  return fixed
+  return writer.write(fix_tokens)
