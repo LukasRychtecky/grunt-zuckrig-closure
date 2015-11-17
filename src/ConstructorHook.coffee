@@ -31,6 +31,8 @@ class ConstructorHook
     @_inject_class_provide tokens
     @_inject_require_super tokens
 
+    return @_builder.build_closure_start().concat(tokens, @_builder.build_closure_end())
+
   _inject_annotations: (i, comment, tokens) ->
 
     if comment.type is 'Block'
